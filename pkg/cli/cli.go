@@ -22,14 +22,6 @@ func New() *App {
 	}
 }
 
-func (a *App) Run(args []string) error {
-	if err := a.cliApp.Run(args); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (a *App) RegisterConfig(config *Config) {
 	// Do not error or panic when an empty/nil config is provided
 	//
@@ -41,4 +33,12 @@ func (a *App) RegisterConfig(config *Config) {
 	a.cliApp.Name = config.Name
 	a.cliApp.Usage = config.Description
 	a.cliApp.Version = config.Version
+}
+
+func (a *App) Run(args []string) error {
+	if err := a.cliApp.Run(args); err != nil {
+		return err
+	}
+
+	return nil
 }
