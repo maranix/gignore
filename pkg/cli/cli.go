@@ -8,6 +8,7 @@ import (
 
 type App struct {
 	cliApp *cli.App
+	flags  []cli.Flag
 }
 
 type Config struct {
@@ -21,6 +22,7 @@ func New() *App {
 
 	return &App{
 		cliApp: cliApp,
+		flags:  []cli.Flag{},
 	}
 }
 
@@ -38,6 +40,7 @@ func (a *App) RegisterConfig(config *Config) {
 }
 
 func (a *App) Run(args []string) error {
+	a.cliApp.Flags = setupCliFlags()
 	a.cliApp.Action = actionHandler
 
 	if err := a.cliApp.Run(args); err != nil {
