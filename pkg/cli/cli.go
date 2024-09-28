@@ -3,11 +3,13 @@ package cli
 import (
 	"fmt"
 
+	"github.com/maranix/gignore/pkg/tui"
 	"github.com/urfave/cli/v2"
 )
 
 type App struct {
 	cliApp *cli.App
+	tuiApp *tui.Tui
 	flags  []cli.Flag
 }
 
@@ -19,9 +21,11 @@ type Config struct {
 
 func New() *App {
 	cliApp := cli.NewApp()
+	tuiApp := tui.NewApp()
 
 	return &App{
 		cliApp: cliApp,
+		tuiApp: tuiApp,
 		flags:  []cli.Flag{},
 	}
 }
@@ -41,7 +45,13 @@ func (a *App) RegisterConfig(config *Config) {
 
 func (a *App) Run(args []string) error {
 	a.cliApp.Flags = setupCliFlags()
-	a.cliApp.Action = actionHandler
+	a.cliApp.Action = func(cCtx *cli.Context) error {
+		if err := actionHandler(cCtx, a.tuiApp); err != nil {
+			return err
+		}
+
+		return nil
+	}
 
 	if err := a.cliApp.Run(args); err != nil {
 		return err
@@ -50,12 +60,13 @@ func (a *App) Run(args []string) error {
 	return nil
 }
 
-func actionHandler(cCtx *cli.Context) error {
+func actionHandler(cCtx *cli.Context, tuiApp *tui.Tui) error {
 	argsLen := cCtx.Args().Len()
 
-	// TODO: Implement TUI
 	if argsLen < 1 {
-		return fmt.Errorf("Expected to execute TUI, functionality is not yet implemented!")
+		if err := tuiApp.Run(); err != nil {
+			return err
+		}
 	}
 
 	// TODO: Implement template downloading functionality
