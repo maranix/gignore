@@ -8,14 +8,14 @@ import (
 )
 
 type state struct {
-	textinput textinput.Model
+	textinput textInputWrapper
 	err       error
 }
 
 func newState() state {
-	ti := textinput.New()
-	ti.Placeholder = "go"
-	ti.Focus()
+	ti := *newTextInput().
+		Default().
+		Focus()
 
 	return state{
 		textinput: ti,
@@ -30,7 +30,7 @@ func (s state) Init() tea.Cmd {
 func (s state) View() string {
 	return fmt.Sprintf(
 		"Select a .gitignore template to fetch\n\n%s\n\n%s",
-		s.textinput.View(),
+		s.textinput.model.View(),
 		"(esc or ctrl-c to quit)",
 	) + "\n"
 }
@@ -50,6 +50,6 @@ func (s state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s, nil
 	}
 
-	s.textinput, cmd = s.textinput.Update(msg)
+	s.textinput.model, cmd = s.textinput.Update(msg)
 	return s, cmd
 }
