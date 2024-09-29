@@ -8,26 +8,26 @@ import (
 )
 
 type state struct {
-	textinput textInputWrapper
+	textinput *textInputWrapper
 	err       error
 }
 
-func newState() state {
-	ti := *newTextInput().
+func newState() *state {
+	ti := newTextInput().
 		Default().
 		Focus()
 
-	return state{
+	return &state{
 		textinput: ti,
 		err:       nil,
 	}
 }
 
-func (s state) Init() tea.Cmd {
+func (s *state) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (s state) View() string {
+func (s *state) View() string {
 	return fmt.Sprintf(
 		"Select a .gitignore template to fetch\n\n%s\n\n%s",
 		s.textinput.model.View(),
@@ -35,7 +35,7 @@ func (s state) View() string {
 	) + "\n"
 }
 
-func (s state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {

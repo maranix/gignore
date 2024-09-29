@@ -5,14 +5,17 @@ import (
 )
 
 type Tui struct {
-	app *tea.Program
+	app   *tea.Program
+	state *state
 }
 
 func NewApp() *Tui {
-	p := tea.NewProgram(newState())
+	s := newState()
+	p := tea.NewProgram(s)
 
 	return &Tui{
-		app: p,
+		app:   p,
+		state: s,
 	}
 }
 
