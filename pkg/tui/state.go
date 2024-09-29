@@ -5,10 +5,12 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type state struct {
 	textinput *textInputWrapper
+	list      *listWrapper
 	err       error
 }
 
@@ -17,8 +19,11 @@ func newState() *state {
 		Default().
 		Focus()
 
+	li := NewDefaultList()
+
 	return &state{
 		textinput: ti,
+		list:      li,
 		err:       nil,
 	}
 }
@@ -29,15 +34,14 @@ func (s *state) Init() tea.Cmd {
 
 func (s *state) View() string {
 	return fmt.Sprintf(
-		"Select a .gitignore template to fetch\n\n%s\n\n%s",
+		"Select a .gitignore template to fetch\n\n%s\n\n%s\n\n%s",
 		s.textinput.model.View(),
+		lipgloss.NewStyle().Render(s.list.model.View()),
 		"(esc or ctrl-c to quit)",
 	) + "\n"
 }
 
 func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -50,6 +54,11 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s, nil
 	}
 
-	s.textinput.model, cmd = s.textinput.Update(msg)
-	return s, cmd
+	var textinputCmd tea.Cmd
+	var listCmd tea.Cmd
+
+	s.textinput.model, textinputCmd = s.textinput.Update(msg)
+	s.list.model, listCmd = s.list.Update(msg)
+
+	return s, tea.Batch(textinputCmd, listCmd)
 }
