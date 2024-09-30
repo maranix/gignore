@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/maranix/gignore/pkg/fetch"
 	"github.com/maranix/gignore/pkg/tui"
 	"github.com/urfave/cli/v2"
 )
@@ -65,5 +66,5 @@ func actionHandler(cCtx *cli.Context) error {
 	//
 	// 1. If only 1 arg is provided then download it simply as .gitignore
 	// 2. If more than 1 args are provided then download as template names
-	return fmt.Errorf("Expected to download .gitignore, functionality is not yet implemented!")
+	return fetch.Template(cCtx.Args().First(), "main")
 }
