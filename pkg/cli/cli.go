@@ -33,7 +33,7 @@ func New() *App {
 func (a *App) RegisterConfig(config *Config) {
 	// Do not error or panic when an empty/nil config is provided
 	//
-	// Instead fallback to defaults set by urfave/cli.
+	// Instead fallback to defaults set by `urfave/cli`.
 	if config == nil {
 		return
 	}
@@ -45,13 +45,7 @@ func (a *App) RegisterConfig(config *Config) {
 
 func (a *App) Run(args []string) error {
 	a.cliApp.Flags = setupCliFlags()
-	a.cliApp.Action = func(cCtx *cli.Context) error {
-		if err := actionHandler(cCtx, a.tuiApp); err != nil {
-			return err
-		}
-
-		return nil
-	}
+	a.cliApp.Action = actionHandler
 
 	if err := a.cliApp.Run(args); err != nil {
 		return err
@@ -60,13 +54,11 @@ func (a *App) Run(args []string) error {
 	return nil
 }
 
-func actionHandler(cCtx *cli.Context, tuiApp *tui.Tui) error {
+func actionHandler(cCtx *cli.Context) error {
 	argsLen := cCtx.Args().Len()
 
 	if argsLen < 1 {
-		if err := tuiApp.Run(); err != nil {
-			return err
-		}
+		return fmt.Errorf("Expected to run tui, functionality is not yet implemented!")
 	}
 
 	// TODO: Implement template downloading functionality
