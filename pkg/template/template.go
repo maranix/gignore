@@ -2,12 +2,12 @@ package template
 
 import (
 	"context"
-	"fmt"
-	"net/http"
-	"strings"
-	"time"
+	"errors"
+	"io"
+	"unicode"
 )
 
+// Template constants
 const (
 	uriPrefix string = "raw.githubusercontent.com/github/gitignore/refs/heads"
 
@@ -16,26 +16,56 @@ const (
 	globalUriPath    string = "Global"
 	communityUriPath string = "community"
 
-	defaultFileName string = ".gitignore"
-
-	requestMaxWaitTime time.Duration = time.Second * 5
+	defaultFileExtension string = "gitignore"
 )
 
-// TODO:
-//
-// 1. Implement file writer for response body
-// 2. Correct the case for template name for consistency
-//
+// Custom Errors
+var (
+	writeTemplateError   = errors.New("Unable to write template on filesystem")
+	invalidTemplateError = errors.New("Template name cannot be empty")
+)
 
-func Get(name string, variant string) error {
-	template := strings.Join([]string{name, defaultFileName}, ".")
-	uri := fmt.Sprintf("https://%s/%s/%s", uriPrefix, variant, template)
+func Get(w io.Writer, name, variant string) error {
+	templateName, err := formatTemplateName(name)
+	if err != nil {
+		return err
+	}
 
-	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, requestMaxWaitTime)
-	defer cancel()
+	uri, err := buildURL(uriPrefix, variant, templateName)
+	if err != nil {
+		return err
+	}
 
-	err := getWithContext(ctx, uri)
+	body, err := get(uri.String())
+	if err != nil {
+		return err
+	}
+
+	err = writeTemplate(w, body)
+	if err != nil {
+		return writeTemplateError
+	}
+
+	return nil
+}
+
+func GetWithContext(ctx context.Context, w io.Writer, name, variant string) error {
+	templateName, err := formatTemplateName(name)
+	if err != nil {
+		return err
+	}
+
+	uri, err := buildURL(uriPrefix, variant, templateName)
+	if err != nil {
+		return err
+	}
+
+	body, err := getWithContext(ctx, uri.String())
+	if err != nil {
+		return err
+	}
+
+	err = writeTemplate(w, body)
 	if err != nil {
 		return err
 	}
@@ -43,19 +73,26 @@ func Get(name string, variant string) error {
 	return nil
 }
 
-func getWithContext(ctx context.Context, url string) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return err
+func formatTemplateName(name string) (string, error) {
+	chars := []rune(name)
+	for _, char := range chars {
+		if !unicode.IsLetter(char) {
+			return "", invalidTemplateError
+		}
 	}
 
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
+	chars[0] = unicode.ToUpper(chars[0])
+	for i := 1; i < len(chars); i++ {
+		chars[i] = unicode.ToLower(chars[i])
 	}
 
-	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("Request failed with status code: %s\n\n%v", res.Status, err)
+	return string(chars), nil
+}
+
+func writeTemplate(w io.Writer, body []byte) error {
+	_, err := w.Write(body)
+	if err != nil {
+		return writeTemplateError
 	}
 
 	return nil
