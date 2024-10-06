@@ -27,7 +27,7 @@ var (
 	invalidTemplateBody = errors.New("Unable to read Template body")
 )
 
-func get(url string) ([]byte, error) {
+func get(url string) (io.ReadCloser, error) {
 	res, err := client.Get(url)
 	if err != nil {
 		return nil, err
@@ -38,15 +38,10 @@ func get(url string) ([]byte, error) {
 		return nil, err
 	}
 
-	body, err := responseBodyReader(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
+	return res.Body, nil
 }
 
-func getWithContext(ctx context.Context, url string) ([]byte, error) {
+func getWithContext(ctx context.Context, url string) (io.ReadCloser, error) {
 	req, err := requestWithContext(ctx, url)
 	if err != nil {
 		return nil, err
@@ -62,12 +57,7 @@ func getWithContext(ctx context.Context, url string) ([]byte, error) {
 		return nil, err
 	}
 
-	body, err := responseBodyReader(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
+	return res.Body, nil
 }
 
 func requestWithContext(ctx context.Context, url string) (*http.Request, error) {
@@ -89,8 +79,8 @@ func buildURL(base, variant, name string) (*url.URL, error) {
 		return nil, err
 	}
 
-	tempalteName := strings.Join([]string{name, defaultFileExtension}, ".")
-	uri = uri.JoinPath(variant, tempalteName)
+	t := strings.Join([]string{name, defaultFileExtension}, ".")
+	uri = uri.JoinPath(variant, t)
 
 	return uri, nil
 }
@@ -109,10 +99,10 @@ func handleStatusCodeErrors(statusCode int) error {
 func responseBodyReader(rc io.ReadCloser) ([]byte, error) {
 	defer rc.Close()
 
-	body, err := io.ReadAll(rc)
+	b, err := io.ReadAll(rc)
 	if err != nil {
 		return nil, err
 	}
 
-	return body, nil
+	return b, nil
 }

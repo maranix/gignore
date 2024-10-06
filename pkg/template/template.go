@@ -21,27 +21,27 @@ const (
 
 // Custom Errors
 var (
-	writeTemplateError   = errors.New("Unable to write template on filesystem")
+	writeTemplateError   = errors.New("Unable to save gitignore")
 	invalidTemplateError = errors.New("Template name cannot be empty")
 )
 
 func Get(w io.Writer, name, variant string) error {
-	templateName, err := formatTemplateName(name)
+	t, err := formatTemplateName(name)
 	if err != nil {
 		return err
 	}
 
-	uri, err := buildURL(uriPrefix, variant, templateName)
+	uri, err := buildURL(uriPrefix, variant, t)
 	if err != nil {
 		return err
 	}
 
-	body, err := get(uri.String())
+	b, err := get(uri.String())
 	if err != nil {
 		return err
 	}
 
-	err = writeTemplate(w, body)
+	err = writeTemplate(w, b)
 	if err != nil {
 		return writeTemplateError
 	}
@@ -50,22 +50,22 @@ func Get(w io.Writer, name, variant string) error {
 }
 
 func GetWithContext(ctx context.Context, w io.Writer, name, variant string) error {
-	templateName, err := formatTemplateName(name)
+	t, err := formatTemplateName(name)
 	if err != nil {
 		return err
 	}
 
-	uri, err := buildURL(uriPrefix, variant, templateName)
+	uri, err := buildURL(uriPrefix, variant, t)
 	if err != nil {
 		return err
 	}
 
-	body, err := getWithContext(ctx, uri.String())
+	b, err := getWithContext(ctx, uri.String())
 	if err != nil {
 		return err
 	}
 
-	err = writeTemplate(w, body)
+	err = writeTemplate(w, b)
 	if err != nil {
 		return err
 	}
@@ -89,10 +89,12 @@ func formatTemplateName(name string) (string, error) {
 	return string(chars), nil
 }
 
-func writeTemplate(w io.Writer, body []byte) error {
-	_, err := w.Write(body)
+func writeTemplate(w io.Writer, body io.ReadCloser) error {
+	defer body.Close()
+
+	_, err := io.Copy(w, body)
 	if err != nil {
-		return writeTemplateError
+		return err
 	}
 
 	return nil
