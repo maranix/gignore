@@ -4,7 +4,7 @@ gignore is a simple and lightweight CLI tool designed to download .gitignore fil
 With a single command, you can fetch the appropriate .gitignore template for your project’s tech stack,
 helping you to quickly set up and manage your repository's ignored files.
 
-**Features:**
+## Features
 
 - Fetch .gitignore files for a variety of programming languages and frameworks.
 - Easy-to-use command-line interface.
