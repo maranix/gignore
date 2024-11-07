@@ -4,9 +4,9 @@
 
 ## v0.1 (07/11/2024)
 
-- [ x ] Parse and process provided template name via cli argument ex: (gignore go).
-- [ x ] Fetch the template synchronously from github/gitignore repo.
-- [ x ] Save the fetched template to .gitignore in CWD by default.
+- [x] Parse and process provided template name via cli argument ex: (gignore go).
+- [x] Fetch the template synchronously from github/gitignore repo.
+- [x] Save the fetched template to .gitignore in CWD by default.
 
 ---
 
