@@ -1,6 +1,6 @@
 # gignore
 
-gignore is a simple and lightweight CLI tool designed to download .gitignore files from the official GitHub repository at github.com/github/gitignore. 
+gignore is a simple and lightweight CLI tool designed to download .gitignore files from the official GitHub repository of **gitignore**. 
 With a single command, you can fetch the appropriate .gitignore template for your project’s tech stack,
 helping you to quickly set up and manage your repository's ignored files.
 
